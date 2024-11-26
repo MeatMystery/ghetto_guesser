@@ -33,7 +33,7 @@ def make_round_data(filename):
         Redacts the price from the description if it appears in any format.
         Replaces it with [REDACTED PRICE].
         Used ChatGPT to help find the possible variations price could take
-        and how to pass them to the re of the regular expression module
+        and how to pass them to the regular expression module
         """
         if price is None:
             return description  # No price to redact
@@ -51,7 +51,12 @@ def make_round_data(filename):
 
         # Replace all matches with [REDACTED PRICE]
         for pattern in patterns:
-            description = re.sub(pattern, '[REDACTED PRICE]', description, flags=re.IGNORECASE)
+            description = re.sub(
+                pattern,
+                '[REDACTED PRICE]',
+                description,
+                flags=re.IGNORECASE
+                )
 
         return description
 

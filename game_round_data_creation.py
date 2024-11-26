@@ -2,16 +2,19 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from random import sample
+import re
 
 
 def make_round_data(filename):
     """
-    Generates round data by extracting valid Craigslist listings from the given file.
+    Generates round data by extracting valid Craigslist listings from the
+    given file.
     """
 
     def link_list_trimmer():
         """
-        Gathers 20 random links from the Craigslist search results and stores them in a list.
+        Gathers 20 random links from the Craigslist search results and stores
+        them in a list.
         """
         all_links = []
 
@@ -25,10 +28,38 @@ def make_round_data(filename):
         all_links = all_links[2:]  # Skip the first two lines
         return sample(all_links, 20)  # Return 20 random links
 
+    def redact_price_in_description(description, price):
+        """
+        Redacts the price from the description if it appears in any format.
+        Replaces it with [REDACTED PRICE].
+        Used ChatGPT to help find the possible variations price could take
+        and how to pass them to the re of the regular expression module
+        """
+        if price is None:
+            return description  # No price to redact
+
+        # Convert price to string for pattern matching
+        price_str = str(price)
+
+        # Define regex patterns for possible price formats
+        patterns = [
+            rf'\b{price_str}\b',             # Exact match of price
+            rf'\b{price_str}\.\d{{2}}\b',    # Price with decimal
+            rf'\$\s*{price_str}\b',          # Price prefixed by $
+            rf'\$\s*{price_str}\.\d{{2}}\b'  # Price prefixed by $ with decimal
+        ]
+
+        # Replace all matches with [REDACTED PRICE]
+        for pattern in patterns:
+            description = re.sub(pattern, '[REDACTED PRICE]', description, flags=re.IGNORECASE)
+
+        return description
+
     def extract_craigslist_data(url):
         """
-        Extracts data from a Craigslist URL, including the title, price, photo link, and description.
-        Returns a tuple if all fields are valid, or None otherwise.
+        Extracts data from a Craigslist URL, including the title, price, photo
+        link, and description. Returns a tuple if all fields are valid, or None
+        otherwise.
         """
         try:
             response = requests.get(url)
@@ -66,6 +97,10 @@ def make_round_data(filename):
             posting_body = soup.find('section', id='postingbody')
             description = posting_body.text.strip() if posting_body else None
 
+            # Redact price from description
+            if description:
+                description = redact_price_in_description(description, price)
+
             # Create the tuple
             data_tuple = (url, title, description, main_photo, price)
 
@@ -101,7 +136,7 @@ if __name__ == '__main__':
 
         for idx, result in enumerate(results, start=1):
             url, title, description, photo, price = result
-            print(f"{'='*40}\nListing #{idx}")
+            print(f"{'='*40}\nListing #{idx}\n")
             print(f"Title: {title}")
             print(f"Price: {price}")
             print(f"Description:\n{description}")

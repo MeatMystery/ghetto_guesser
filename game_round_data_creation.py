@@ -8,12 +8,13 @@ import re
 def make_round_data(filename):
     """
     Generates round data by extracting valid Craigslist listings from the
-    given file.
+    link file.
     """
 
     def link_list_trimmer():
         """
-        Gathers 20 random links from the Craigslist search results and stores
+        Trims the list of craigslist listing s to be more easily paresable by
+        gathering 20 random links from the Craigslist search results and stores
         them in a list.
         """
         all_links = []
@@ -25,10 +26,10 @@ def make_round_data(filename):
             for line in file:
                 all_links.append(line.rstrip())
 
-        all_links = all_links[2:]  # Skip the first two lines
+        all_links = all_links[2:]  # Skip first two lines bc they're garbage
         return sample(all_links, 20)  # Return 20 random links
 
-    def redact_price_in_description(description, price):
+    def trim_description(description, price):
         """
         Redacts the price from the description if it appears in any format.
         Replaces it with [REDACTED PRICE].
@@ -41,19 +42,29 @@ def make_round_data(filename):
         # Convert price to string for pattern matching
         price_str = str(price)
 
-        # Define regex patterns for possible price formats
-        patterns = [
+        # Define patterns for possible price formats done w/ ChatGPT
+        price_patterns = [
             rf'\b{price_str}\b',             # Exact match of price
             rf'\b{price_str}\.\d{{2}}\b',    # Price with decimal
             rf'\$\s*{price_str}\b',          # Price prefixed by $
             rf'\$\s*{price_str}\.\d{{2}}\b'  # Price prefixed by $ with decimal
-        ]
-
+            ]
+        text_to_remove = [
+            'QR Code Link to This Post\n\n\n'
+            ]
         # Replace all matches with [REDACTED PRICE]
-        for pattern in patterns:
+        for pattern in price_patterns:
             description = re.sub(
                 pattern,
                 '[REDACTED PRICE]',
+                description,
+                flags=re.IGNORECASE
+                )
+
+        for ttr in text_to_remove:
+            description = re.sub(
+                ttr,
+                '',
                 description,
                 flags=re.IGNORECASE
                 )
@@ -104,7 +115,7 @@ def make_round_data(filename):
 
             # Redact price from description
             if description:
-                description = redact_price_in_description(description, price)
+                description = trim_description(description, price)
 
             # Create the tuple
             data_tuple = (url, title, description, main_photo, price)
@@ -132,8 +143,9 @@ def make_round_data(filename):
 
 # Test Code
 if __name__ == '__main__':
-    # Display pretty results, made a base function formatted with
-    # ChatGPT as I could not be arsed to format it
+    # Display pretty results, made a base function and formatted with
+    # ChatGPT for testing readability as I could not be arsed to format
+    # it
     def print_pretty_results(results):
         if not results:
             print("No valid listings found.")

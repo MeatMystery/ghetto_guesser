@@ -128,7 +128,7 @@ def make_round_data(filename):
                 main_photo['src'].strip()
                 if main_photo and 'src' in main_photo.attrs
                 else None
-            )
+                )
 
             # Extract the description
             posting_body = soup.find('section', id='postingbody')
@@ -147,7 +147,7 @@ def make_round_data(filename):
                 "description": description,
                 "photo": main_photo,
                 "price": price,
-            }
+                }
 
             # Discard dictionary if any field is None
             if None in data_dict.values():

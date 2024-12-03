@@ -1,0 +1,17 @@
+TODO LIST
+
+
+High Priority:
+- Make a means for better scoring bc current system sucks
+- Randomize winner if tie or multiple tied winners
+- set max resolution for the images
+- lint
+
+Mid Priority:
+- Launcher system with graphics and coolness
+- Means to install dependencies on launch
+
+
+Low Priority:
+- pack into executable
+

@@ -3,7 +3,7 @@
 # ChatGPT used to help resolve syntax issues & make docstring format prettier,
 # linted w/ FLAKE8, spellchecked w/ StreetSideSoftware's Spell Checker
 
-# gg_main_game generates the game based on round data and  
+# gg_main_game generates the game based on round data and
 
 # last revision 11-14-2024
 
@@ -58,7 +58,7 @@ class GhettoGusserGame:
         # Horizontal line under title
         self.title_separator = tk.Label(
             self.master,
-            text="-" * 100,
+            text="-" * 120,
             bg="white",
             font=("Times New Roman", 12)
             )
@@ -140,7 +140,7 @@ class GhettoGusserGame:
         # Horizontal line below buttons
         self.buttons_separator = tk.Label(
             self.master,
-            text="-" * 100,
+            text="-" * 120,
             bg="white",
             font=("Times New Roman", 12)
             )
@@ -253,7 +253,7 @@ class GhettoGusserGame:
             )
         messagebox.showinfo(
             "Game Over",
-            f"Final Scores:\n\n{scores_text}\n\nWinner: Player {winner + 1}!"
+            f"Final Scores:\n\n{scores_text}\n\nPlayer {winner + 1} won!"
             )
         self.master.quit()
 
@@ -268,13 +268,18 @@ def main():
     # Ensure enough listings in round data, never seen this in play test
     # hopefully I never will but just in case
     if len(round_data) < ROUNDS:
-        messagebox.showerror("Insufficient Data", "Not enough valid listings for the game.")
+        messagebox.showerror(
+            "Insufficient Data",
+            "Not enough valid listings for game."
+            )
         return
 
     # Start game
     root = tk.Tk()
     game = GhettoGusserGame(root, round_data)
     root.mainloop()
+    # I do not know why this is needed, works without it but throws syntax error?
+    game
 
 
 if __name__ == "__main__":

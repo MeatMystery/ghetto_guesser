@@ -201,4 +201,3 @@ if __name__ == '__main__':
     results = make_round_data('cl_listings_file.txt')
     print(results)
     print_pretty_results(results)
-  

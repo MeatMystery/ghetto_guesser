@@ -7,6 +7,9 @@ High Priority:
 - set max resolution for the images
 - lint
 - make link clickable to original post
+- make empty fields default to 100000000
+- make guess and price fields display blank after new round starts
+
 
 Mid Priority:
 - Launcher system with graphics and coolness

@@ -1,3 +1,16 @@
+# GhettoGusser - Remake of 'Ghetto Price is Right' from 2022 CCOMP-11p class
+# Originally by Story on the Programming Discord, re-made Chase Varvayanis
+# ChatGPT used to help resolve syntax issues & make docstring format prettier,
+# linted w/ FLAKE8, spellchecked w/ StreetSideSoftware's Spell Checker
+
+# round_data_maker module; Takes the cl_listings_file generated previously, and
+# selects a random predetermined padded number of listings to scrape. Scrapes
+# the listings for title, text, description, photourl, etc, and creates a list
+# of dictionaries that contain that info to be used as round data
+
+# last revision 11-14-2024
+
+
 import os
 import requests
 from bs4 import BeautifulSoup
@@ -8,14 +21,15 @@ import re
 def make_round_data(filename):
     """
     Generates round data by extracting valid Craigslist listings from the
-    link file.
+    link file, storing the data as a list of dictionaries. Includes a nested
+    function to trim the list to 5 elements for the final round.
     """
 
     def link_list_trimmer():
         """
-        Trims the list of craigslist listing s to be more easily paresable by
-        gathering 20 random links from the Craigslist search results and stores
-        them in a list.
+        Trims the list of Craigslist listings to be more easily parsable by
+        gathering x random links from the Craigslist search result file and
+        storing them in a list.
         """
         all_links = []
 
@@ -27,55 +41,58 @@ def make_round_data(filename):
                 all_links.append(line.rstrip())
 
         all_links = all_links[2:]  # Skip first two lines bc they're garbage
-        return sample(all_links, 20)  # Return 20 random links
+        return sample(all_links, 15)  # Return x random links
 
-    def trim_description(description, price):
+    def redact_price(text, price):
         """
-        Redacts the price from the description if it appears in any format.
-        Replaces it with [REDACTED PRICE].
-        Used ChatGPT to help find the possible variations price could take
-        and how to pass them to the regular expression module
+        Redacts the price from the given title/description if it
+        appears in most formats, replaces it with [REDACTED PRICE].
         """
-        if price is None:
-            return description  # No price to redact
+        if text is None or price is None:
+            return text  # No price or text to redact
 
         # Convert price to string for pattern matching
         price_str = str(price)
 
-        # Define patterns for potential price formats done w/ ChatGPT
+        # Define patterns for potential price formats
+        # Had ChatGPT help with getting the search string formatting and syntax
+        # correct to catch most cases.
         price_patterns = [
             rf'\b{price_str}\b',             # Exact match of price
             rf'\b{price_str}\.\d{{2}}\b',    # Price with decimal
             rf'\$\s*{price_str}\b',          # Price prefixed by $
             rf'\$\s*{price_str}\.\d{{2}}\b'  # Price prefixed by $ with decimal
-            ]
-        text_to_remove = [
+        ]
+        header_text_to_remove = [
+            # There is still one leading newline for formatting purposes
             'QR Code Link to This Post\n\n\n'
-            ]
-        # Replace all matches with [REDACTED PRICE]
+        ]
+
+        # Replace all price patterns with [REDACTED PRICE]
         for pattern in price_patterns:
-            description = re.sub(
+            text = re.sub(
                 pattern,
                 '[REDACTED PRICE]',
-                description,
+                text,
                 flags=re.IGNORECASE
-                )
+            )
 
-        for ttr in text_to_remove:
-            description = re.sub(
+        # Remove unnecessary header text
+        for ttr in header_text_to_remove:
+            text = re.sub(
                 ttr,
                 '',
-                description,
+                text,
                 flags=re.IGNORECASE
-                )
+            )
 
-        return description
+        return text
 
     def extract_craigslist_data(url):
         """
         Extracts data from a Craigslist URL, including the title, price, photo
-        link, and description. Returns a tuple if all fields are valid, or None
-        otherwise.
+        link, and description. Returns a dictionary if all fields are valid,
+        or None otherwise.
         """
         try:
             response = requests.get(url)
@@ -101,6 +118,10 @@ def make_round_data(filename):
             else:
                 price = None
 
+            # Redact price from the title
+            if title:
+                title = redact_price(title, price)
+
             # Extract the main photo link
             main_photo = soup.find('img')
             main_photo = (
@@ -113,21 +134,33 @@ def make_round_data(filename):
             posting_body = soup.find('section', id='postingbody')
             description = posting_body.text.strip() if posting_body else None
 
-            # Redact price from description
+            # Redact price from the description
             if description:
-                description = trim_description(description, price)
+                description = redact_price(description, price)
 
-            # Create the tuple
-            data_tuple = (url, title, description, main_photo, price)
+            # Create the dictionary
+            data_dict = {
+                "url": url,
+                "title": title,
+                "description": description,
+                "photo": main_photo,
+                "price": price,
+            }
 
-            # Discard tuple if any field is None
-            if None in data_tuple:
+            # Discard dictionary if any field is None
+            if None in data_dict.values():
                 return None
-            return data_tuple
+            return data_dict
 
         except Exception as e:
             print(f"ERROR: {e}")
             return None
+
+    def final_round_data(data):
+        """
+        Trims the listing data list to the final output of 5 elements.
+        """
+        return sample(data, 5) if len(data) >= 5 else data
 
     # Generate URLs and extract data
     url_list = link_list_trimmer()
@@ -138,29 +171,32 @@ def make_round_data(filename):
         if result:
             results.append(result)
 
-    return results
+    # Trim the results for the final round
+    round_data = final_round_data(results)
+    return round_data
 
 
 # Test Code
+# Made the base function, had ChatGPT do the formatting because
+# I could not be arsed for code that was just diagnostic
 if __name__ == '__main__':
-    # Display pretty results, made a base function and formatted with
-    # ChatGPT for testing readability as I could not be arsed to format
-    # it
+    # Print pretty results
     def print_pretty_results(results):
         if not results:
             print("No valid listings found.")
             return
 
         for idx, result in enumerate(results, start=1):
-            url, title, description, photo, price = result
             print(f"{'='*40}\nListing #{idx}\n")
-            print(f"Title: {title}")
-            print(f"Price: {price}")
-            print(f"Description:\n{description}")
-            print(f"Photo URL: {photo}")
-            print(f"Original Listing: {url}")
+            print(f"Title: {result['title']}")
+            print(f"Price: {result['price']}")
+            print(f"Description:\n{result['description']}")
+            print(f"Photo URL: {result['photo']}")
+            print(f"Original Listing: {result['url']}")
             print(f"{'='*40}\n")
 
-    # Generate results
+    # Generate Round Data
     results = make_round_data('cl_listings_file.txt')
+    print(results)
     print_pretty_results(results)
+  

@@ -134,7 +134,7 @@ def make_round_data(filename):
             posting_body = soup.find('section', id='postingbody')
             description = posting_body.text.strip() if posting_body else None
             # Shorten to 800 characters for formatting
-            description = description[:800]
+            description = description[:600]
 
             # Redact price from the description
             if description:

@@ -6,7 +6,6 @@ High Priority:
 - Randomize winner if tie or multiple tied winners
 - set max resolution for the images
 - lint
-- check if everything still works on windows
 - make link clickable to original post
 
 Mid Priority:

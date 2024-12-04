@@ -1,6 +1,6 @@
 # GhettoGusser - Remake of 'Ghetto Price is Right' from 2022 CCOMP-11p class
 # Originally by Story on the Programming Discord, re-made Chase Varvayanis
-# ChatGPT used to help resolve syntax issues & make docstrings prettier,
+# ChatGPT used to help resolve syntax issues & make docstrings format prettier,
 # linted w/ FLAKE8, spellchecked w/ StreetSideSoftware's Spell Checker. Stack
 # Overflow used where referenced
 
@@ -48,7 +48,7 @@ class GhettoGusserGame:
 
     def create_widgets(self):
         """
-        Create the GUI elements for the game, labels, buttons, 
+        Create the GUI elements for the game, labels, buttons,
         and input fields for player guesses.
         """
         # Listing title
@@ -177,7 +177,7 @@ class GhettoGusserGame:
 
     def display_round(self):
         """
-        Display the details of the current round's craigslist listing, title, 
+        Display the details of the current round's craigslist listing, title,
         description, and cover image
         """
         if self.current_round < len(self.round_data):
@@ -256,7 +256,7 @@ class GhettoGusserGame:
 
     def next_round(self):
         """
-        Proceed to the next round, resetting input fields and updating the 
+        Proceed to the next round, resetting input fields and updating the
         interface for the new round.
         """
         self.current_round += 1

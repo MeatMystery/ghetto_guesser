@@ -1,6 +1,6 @@
 # GhettoGusser - Remake of 'Ghetto Price is Right' from 2022 CCOMP-11p class
 # Originally by Story on the Programming Discord, re-made Chase Varvayanis
-# ChatGPT used to help resolve syntax issues & make docstring format prettier,
+# ChatGPT used to help resolve syntax issues & make docstrings prettier,
 # linted w/ FLAKE8, spellchecked w/ StreetSideSoftware's Spell Checker. Stack
 # Overflow used where referenced
 
@@ -25,11 +25,16 @@ PLAYER_COUNT = 4  # Number of players
 
 
 class GhettoGusserGame:
-    # Naming conventions based off of this post:
-    # https://stackoverflow.com/questions/62536863/tkinter-help-difference-between-master-and-root-keywords-in-this-code
     def __init__(self, master, round_data):
+        """
+        Initialize the GhettoGusserGame with GUI elements and game state.
+
+        Args:
+            master (tk.Tk): The root window for the GUI.
+            round_data (list): List of dictionaries containing round data.
+        """
         self.master = master
-        self.master.title("GhettoGusser Game")
+        self.master.title("GhettoGusser")
         self.master.configure(bg="white")
 
         # Game initial state
@@ -42,6 +47,10 @@ class GhettoGusserGame:
         self.create_widgets()
 
     def create_widgets(self):
+        """
+        Create the GUI elements for the game, labels, buttons, 
+        and input fields for player guesses.
+        """
         # Listing title
         self.title_label = tk.Label(
             self.master,
@@ -132,7 +141,7 @@ class GhettoGusserGame:
         # Horizontal line below buttons
         self.buttons_separator = tk.Label(
             self.master,
-            text="-" * 120,
+            text="-" * 150,
             bg="white",
             font=("Times New Roman", 12)
             )
@@ -168,7 +177,8 @@ class GhettoGusserGame:
 
     def display_round(self):
         """
-        Display the current round's craigslist listing.
+        Display the details of the current round's craigslist listing, title, 
+        description, and cover image
         """
         if self.current_round < len(self.round_data):
             listing = self.round_data[self.current_round]
@@ -245,7 +255,10 @@ class GhettoGusserGame:
         self.next_round_button.config(state=tk.NORMAL)
 
     def next_round(self):
-        """Continue game to next round."""
+        """
+        Proceed to the next round, resetting input fields and updating the 
+        interface for the new round.
+        """
         self.current_round += 1
 
         # Clear inputs
@@ -333,7 +346,7 @@ class GhettoGusserGame:
         ))
 
     def restart_game(self, end_window):
-        """Restart the game by generating new data and resetting scores."""
+        """Restart the game, generating new data and resetting scores."""
         end_window.destroy()  # Close the end-game window
 
         # Regenerate the link file

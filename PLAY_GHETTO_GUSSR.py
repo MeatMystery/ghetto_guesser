@@ -1,15 +1,18 @@
 # GhettoGusser - Remake of 'Ghetto Price is Right' from 2022 CCOMP-11p class
 # Originally by Story on the Programming Discord, re-made Chase Varvayanis
 # ChatGPT used to help resolve syntax issues & make docstring format prettier,
-# linted w/ FLAKE8, spellchecked w/ StreetSideSoftware's Spell Checker
+# linted w/ FLAKE8, spellchecked w/ StreetSideSoftware's Spell Checker. Stack
+# Overflow used where referenced
 
-# gg_main_game generates the game based on round data and
+# gg_main_game generates the game based on round data creates GUI
+# handles end of game window with option for player to play again or quit, did
+# not have time to implement a launcher window as planned
 
 # last revision 11-14-2024
 
 import tkinter as tk
 from tkinter import messagebox
-from PIL import Image, ImageTk  # For image Processing
+from PIL import Image, ImageTk
 import requests
 from io import BytesIO
 from round_data_maker import make_round_data
@@ -22,6 +25,8 @@ PLAYER_COUNT = 4  # Number of players
 
 
 class GhettoGusserGame:
+    # Naming conventions based off of this post:
+    # https://stackoverflow.com/questions/62536863/tkinter-help-difference-between-master-and-root-keywords-in-this-code
     def __init__(self, master, round_data):
         self.master = master
         self.master.title("GhettoGusser Game")
@@ -33,7 +38,7 @@ class GhettoGusserGame:
         self.scores = [0] * PLAYER_COUNT
         self.entries = []
 
-        # Setup GUI
+        # Setup GUI and elements
         self.create_widgets()
 
     def create_widgets(self):
@@ -42,11 +47,11 @@ class GhettoGusserGame:
             self.master,
             text="",
             font=("Times New Roman", 16),
-            anchor="w",  # Align text to the left horizontally
-            justify="left",  # Justify text to the left
+            anchor="w",
+            justify="left",
             bg="white",
             wraplength=500
-        )
+            )
         self.title_label.grid(
             row=0,
             column=0,
@@ -188,10 +193,10 @@ class GhettoGusserGame:
             response = requests.get(image_url)
             image = Image.open(BytesIO(response.content))
 
-            # Scale down the image if its height is greater than 400px
-            if image.height > 200:
+            # Scale down the image if its height is greater than a certain size
+            if image.height > 300:
                 aspect_ratio = image.width / image.height
-                new_height = 200
+                new_height = 300
                 new_width = int(new_height * aspect_ratio)
                 image = image.resize((new_width, new_height))
 
@@ -205,6 +210,7 @@ class GhettoGusserGame:
             # Display the description
             self.description_label.config(text=f"{listing['description']}")
         else:
+            # End game at last round
             self.end_game()
 
     def submit_guesses(self):
@@ -249,7 +255,7 @@ class GhettoGusserGame:
         self.next_round_button.config(state=tk.NORMAL)
 
     def next_round(self):
-        """Advance to the next round."""
+        """Advance game to next round."""
         self.current_round += 1
 
         # Clear inputs
@@ -259,7 +265,7 @@ class GhettoGusserGame:
         # Clear the score details for the current round
         self.score_label.config(text="")
 
-        # Disable next round button and enable submit button
+        # Disable next round button and enable submit button during round
         self.next_round_button.config(state=tk.DISABLED)
         self.submit_button.config(state=tk.NORMAL)
 
@@ -267,30 +273,31 @@ class GhettoGusserGame:
         self.display_round()
 
     def end_game(self):
-        """Display the final scores and determine the winner or handle ties."""
+        """Display the end game window with final scores and determine the winner."""
         max_score = max(self.scores)
         winners = [i + 1 for i, score in enumerate(self.scores) if score == max_score]
 
         # Format scores for display
         scores_text = "\n".join(
             [f"Player {i + 1}: {self.scores[i]} points" for i in range(PLAYER_COUNT)]
-        )
+            )
 
         if len(winners) > 1:
             # Handle tie case
             winners_text = ", ".join(f"Player {winner}" for winner in winners)
+            # Tie ending message
             final_message = (
                 f"Final Scores:\n\n{scores_text}\n\nIt's a tie!\n"
-                f"Winners: {winners_text}\n\nCongratulations to the tied players!"
-            )
+                f"Winners: {winners_text}"
+                )
         else:
-            # Single winner
+            # Normal winner ending message
             final_message = (
                 f"Final Scores:\n\n{scores_text}\n\nPlayer {winners[0]} won!\n"
                 f"Congratulations!"
-            )
+                )
 
-        # Create a custom end-game window
+        # Create end-game window
         end_window = tk.Toplevel(self.master)
         end_window.title("Game Over")
         end_window.configure(bg="white")
@@ -303,7 +310,7 @@ class GhettoGusserGame:
             bg="white",
             justify="left",
             wraplength=400
-        )
+            )
         message_label.pack(padx=20, pady=20)
 
         # Add Play Again button
@@ -314,7 +321,7 @@ class GhettoGusserGame:
             fg="white",
             font=("Times New Roman", 12),
             command=lambda: self.restart_game(end_window)
-        )
+            )
         play_again_button.pack(pady=10)
 
         # Add Quit button
@@ -325,10 +332,11 @@ class GhettoGusserGame:
             fg="white",
             font=("Times New Roman", 12),
             command=self.master.quit
-        )
+            )
         quit_button.pack(pady=10)
 
         # Center the window
+        # Used ChatGPT to get this working right, could not figure out syntax
         end_window.geometry("+%d+%d" % (
             self.master.winfo_rootx() + 50,
             self.master.winfo_rooty() + 50
@@ -345,11 +353,12 @@ class GhettoGusserGame:
         round_data = make_round_data('cl_listings_file.txt')
 
         # Check if there are enough listings
+        # Really should never be seen unless something goes really wrong
         if len(round_data) < ROUNDS:
             messagebox.showerror(
                 "Insufficient Data",
                 "Not enough valid listings for game."
-            )
+                )
             self.master.quit()
             return
 
@@ -357,7 +366,7 @@ class GhettoGusserGame:
         self.round_data = round_data  # Update with new round data
         self.scores = [0] * PLAYER_COUNT  # Reset scores
         self.current_round = 0  # Reset round counter
-        self.display_round()  # Start the first round
+        self.display_round()  # Start game
 
     generate_listings_file("https://stockton.craigslist.org/search/sss")
 

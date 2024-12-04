@@ -58,11 +58,30 @@ def make_round_data(filename):
         # Had ChatGPT help with getting the search string formatting and syntax
         # correct to catch most cases.
         price_patterns = [
-            rf'\b{price_str}\b',             # Exact match of price
-            rf'\b{price_str}\.\d{{2}}\b',    # Price with decimal
-            rf'\$\s*{price_str}\b',          # Price prefixed by $
-            rf'\$\s*{price_str}\.\d{{2}}\b'  # Price prefixed by $ with decimal
+            rf'\b{price_str}\b',                          # Exact match of price
+            rf'\b{price_str}\.\d{{2}}\b',                 # Price with decimal
+            rf'\$\s*{price_str}\b',                       # Price prefixed by $
+            rf'\$\s*{price_str}\.\d{{2}}\b',              # Price prefixed by $ with decimal
+            rf'\b{price_str},\d{{3}}\b',                  # Price with thousand separator (e.g., 1,000)
+            rf'\b{price_str},\d{{3}}\.\d{{2}}\b',         # Price with thousand separator and decimal
+            rf'\$\s*{price_str},\d{{3}}\b',               # Price prefixed by $ with thousand separator
+            rf'\$\s*{price_str},\d{{3}}\.\d{{2}}\b',      # Price prefixed by $ with thousand separator and decimal
+            rf'\b{price_str}\.\b',                        # Price followed by a period
+            rf'\$\s*{price_str}\.\b',                     # Price prefixed by $ and followed by a period
+            rf'\$\s*{price_str},\d{{3}}\.\b',             # Price with thousand separator followed by a period
+            rf'\$\s*{price_str},\d{{3}}\.\d{{2}}\.\b',    # Price with thousand separator, decimal, and period
+            rf'\(\$\s*{price_str}\)',                     # Price enclosed in parentheses (e.g., ($100))
+            rf'\(\$\s*{price_str}\.\d{{2}}\)',            # Price enclosed in parentheses with decimal
+            rf'\b{price_str}\s*-\s*\b\d+\b',              # Price ranges (e.g., 100 - 200)
+            rf'\$\s*{price_str}\s*-\s*\$\s*\d+\b',        # Price ranges prefixed by $ (e.g., $100 - $200)
+            rf'\bapprox(?:imately)?\s*\$\s*{price_str}\b',  # Approximation words (e.g., approximately $100)
+            rf'\babout\s*\$\s*{price_str}\b',             # About $100
+            rf'-\s*\$\s*{price_str}\b',                   # Negative price (e.g., -$100)
+            rf'\b{price_str}k\b',                         # Prices in shorthand notation (e.g., 1k for 1000)
+            rf'\b{price_str}M\b',                         # Prices in shorthand notation (e.g., 1M for million)
+            rf'\b{price_str}\s*\bUSD\b',                  # Prices with "USD" suffix (e.g., 100 USD)
         ]
+
         header_text_to_remove = [
             # There is still one leading newline for formatting purposes
             'QR Code Link to This Post\n\n\n'

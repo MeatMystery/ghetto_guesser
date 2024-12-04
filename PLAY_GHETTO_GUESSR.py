@@ -4,9 +4,9 @@
 # linted w/ FLAKE8, spellchecked w/ StreetSideSoftware's Spell Checker. Stack
 # Overflow used where referenced
 
-# gg_main_game generates the game based on round data creates GUI
+# gg_main_game generates the game based on data previously acquired and creates GUI,
 # handles end of game window with option for player to play again or quit, did
-# not have time to implement a launcher window as planned
+# not have time to implement a launcher window with options as planned
 
 # last revision 11-14-2024
 
@@ -18,7 +18,7 @@ from io import BytesIO
 from round_data_maker import make_round_data
 from link_file_maker import generate_listings_file
 
-# Constant Game Data
+# Constant Game data for gameplay tuning purposes
 ROUNDS = 5  # Number of rounds
 MAX_SCORE = 10000  # Maximum score per round
 PLAYER_COUNT = 4  # Number of players
@@ -57,22 +57,6 @@ class GhettoGusserGame:
             column=0,
             columnspan=4,
             sticky="w",
-            padx=10,
-            pady=5
-            )
-
-        # Horizontal line under title
-        self.title_separator = tk.Label(
-            self.master,
-            text="-" * 120,
-            bg="white",
-            font=("Times New Roman", 12)
-            )
-        self.title_separator.grid(
-            row=1,
-            column=0,
-            columnspan=4,
-            sticky="ew",
             padx=10,
             pady=5
             )
@@ -123,6 +107,7 @@ class GhettoGusserGame:
         self.button_frame = tk.Frame(self.master, bg="white")
         self.button_frame.grid(row=5, column=0, columnspan=4, pady=10)
 
+        # Submit guesses button
         self.submit_button = tk.Button(
             self.button_frame,
             text="Submit Guesses",
@@ -132,9 +117,10 @@ class GhettoGusserGame:
             )
         self.submit_button.grid(row=0, column=0, padx=20)
 
+        # Next Round Button
         self.next_round_button = tk.Button(
             self.button_frame,
-            text="Next Round",
+            text="Next Round ->",
             command=self.next_round,
             bg="grey",
             fg="black",
@@ -181,7 +167,9 @@ class GhettoGusserGame:
         self.display_round()
 
     def display_round(self):
-        """Display the current round's listing."""
+        """
+        Display the current round's craigslist listing.
+        """
         if self.current_round < len(self.round_data):
             listing = self.round_data[self.current_round]
 
@@ -200,7 +188,7 @@ class GhettoGusserGame:
                 new_width = int(new_height * aspect_ratio)
                 image = image.resize((new_width, new_height))
 
-            # Convert to PhotoImage for Tkinter
+            # Convert to PhotoImage object for Tkinter
             photo = ImageTk.PhotoImage(image)
 
             # Display the image
@@ -214,33 +202,35 @@ class GhettoGusserGame:
             self.end_game()
 
     def submit_guesses(self):
-        """Process guesses and calculate scores for the current round."""
+        """
+        Process guesses and calculate scores for the current round.
+        """
         listing = self.round_data[self.current_round]
         actual_price = listing['price']
 
         try:
-            # Replace empty entries with 0 and convert inputs to integers
+            # Replace empty entries with 0 and and int-cast inputs
             guesses = [
                 int(entry.get()) if entry.get().strip() else 0
                 for entry in self.entries
-            ]
+                ]
         except ValueError:
             messagebox.showerror(
                 "Invalid Input",
                 "Please enter valid numeric guesses."
-            )
+                )
             return
 
-        # Calculate scores based on ratio
+        # Calculate scores, no points if over actual price
         round_details = f"Actual Price: ${actual_price}\nOriginal Listing: {listing['url']}\n\n"
         for i, guess in enumerate(guesses):
-            if guess == 0 or guess > 2 * actual_price:
-                # No points for invalid guesses
+            if guess == 0 or guess > actual_price:
+                # No points for guesses over the actual price or zero
                 score = 0
             else:
-                # Calculate ratio
-                ratio = min(guess / actual_price, actual_price / guess)
-                # Scale score based on ratio, closer to 1 gives more points
+                # Calculate score for guesses under or equal to actual price
+                ratio = guess / actual_price
+                # Scale score based on ratio, closer to actual price gets more points
                 score = int(MAX_SCORE * ratio)
 
             self.scores[i] += score
@@ -255,7 +245,7 @@ class GhettoGusserGame:
         self.next_round_button.config(state=tk.NORMAL)
 
     def next_round(self):
-        """Advance game to next round."""
+        """Continue game to next round."""
         self.current_round += 1
 
         # Clear inputs
@@ -313,7 +303,7 @@ class GhettoGusserGame:
             )
         message_label.pack(padx=20, pady=20)
 
-        # Add Play Again button
+        # Play Again button
         play_again_button = tk.Button(
             end_window,
             text="Play Again",
@@ -336,7 +326,7 @@ class GhettoGusserGame:
         quit_button.pack(pady=10)
 
         # Center the window
-        # Used ChatGPT to get this working right, could not figure out syntax
+        # Used ChatGPT to get this working right, could not figure out syntax and truthfully still can't
         end_window.geometry("+%d+%d" % (
             self.master.winfo_rootx() + 50,
             self.master.winfo_rooty() + 50
@@ -368,6 +358,7 @@ class GhettoGusserGame:
         self.current_round = 0  # Reset round counter
         self.display_round()  # Start game
 
+    # I think this is a duplicate, but removing it seems to break regeneration of round data
     generate_listings_file("https://stockton.craigslist.org/search/sss")
 
 

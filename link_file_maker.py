@@ -1,7 +1,7 @@
 # GhettoGusser - Remake of 'Ghetto Price is Right' from 2022 CCOMP-11p class
 # Originally by Story on the Programming Discord, re-made Chase Varvayanis
 
-# link_file_maker module; Scrapes all valid links from the given Craigslist
+# link_file_maker; Scrapes all valid links from the given Craigslist
 # URL. Saves the collected links to a file named 'cl_listings_file.txt' in the
 # script's parent directory.
 

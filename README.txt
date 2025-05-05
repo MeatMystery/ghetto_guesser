@@ -1,5 +1,5 @@
-GhettoGuessr - Chase Varvayanis 2024
-
+GhettoGuessr - Chase Varvayanis December 2024
+A game about guessing the price of Craigslist listings, like Price Is Right.
 ------------------------------------------------------------------------------------------------------------
 
 HOW TO LAUNCH GAME:
